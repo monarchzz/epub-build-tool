@@ -11,7 +11,7 @@ async function generateEpub() {
       cover: "https://static.cdnno.com/poster/van-co-than-de/300.jpg",
       content: vanCoThanDeData,
     },
-    "van-co-than-de.epub"
+    "out/van-co-than-de.epub"
   ).promise;
 }
 

@@ -23,13 +23,19 @@ async function contentByUrl(url) {
   };
 }
 
-async function batchCrawl({ baseUrl, totalChapters }) {
+async function batchCrawl({
+  baseUrl,
+  totalChapters,
+  startChapter = 1,
+  step = 10,
+}) {
   const data = [];
 
-  for (let i = 1; i <= totalChapters; i += 10) {
-    console.log(`Crawling chapter ${i} to ${i + 9}...`);
+  for (let i = startChapter; i <= totalChapters; i += step) {
+    console.log(`Crawling chapter ${i} to ${i + step - 1}...`);
 
-    const numberOfChapters = i + 9 > totalChapters ? totalChapters - i + 1 : 10;
+    const numberOfChapters =
+      i + step - 1 > totalChapters ? totalChapters - i + 1 : step;
     console.log(`Number of chapters: ${numberOfChapters}`);
 
     const contents = await Promise.all(
@@ -69,4 +75,14 @@ async function vanCoThanDe() {
   return data;
 }
 
-export { vanCoThanDe };
+async function taCoMotThanBiDongKy() {
+  const totalChapters = 1431;
+  const baseUrl =
+    "https://metruyencv.com/truyen/ta-co-mot-than-bi-dong-ky/chuong-";
+
+  const data = await batchCrawl({ baseUrl, totalChapters, step: 50 });
+
+  return data;
+}
+
+export { vanCoThanDe, taCoMotThanBiDongKy };
