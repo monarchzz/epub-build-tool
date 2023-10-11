@@ -1,0 +1,15 @@
+{
+  "name": "epub-build-tool",
+  "version": "1.0.0",
+  "main": "index.js",
+  "license": "MIT",
+  "type": "module",
+  "description": "Crawl content from website and build epub file",
+  "scripts": {
+    "start": "node src/index.js"
+  },
+  "dependencies": {
+    "epub-gen": "^0.1.0",
+    "puppeteer": "^21.3.8"
+  }
+}
