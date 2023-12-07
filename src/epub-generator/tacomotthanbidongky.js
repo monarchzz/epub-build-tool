@@ -1,8 +1,10 @@
 import Epub from "epub-gen";
 import { taCoMotThanBiDongKy } from "../crawler/metruyenchu/index.js";
+import fs from "fs";
 
 async function generateEpub() {
   const data = await taCoMotThanBiDongKy();
+
   await new Epub(
     {
       title: "Ta Có Một Thân Bị Động Kỹ",

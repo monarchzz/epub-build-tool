@@ -4,23 +4,32 @@ async function contentByUrl(url) {
   const page = await newTab();
 
   await page.goto(url);
+  try {
+    const article = await page.$eval("#article", (element) => {
+      element.querySelectorAll("div").forEach((div) => div.remove());
 
-  const article = await page.$eval("#article", (element) => {
-    element.querySelectorAll("div").forEach((div) => div.remove());
+      return element.innerHTML;
+    });
 
-    return element.innerHTML;
-  });
+    const title = await page.$eval(".nh-read__title", (element) => {
+      return element.textContent;
+    });
 
-  const title = await page.$eval(".nh-read__title", (element) => {
-    return element.textContent;
-  });
+    return {
+      title,
+      data: `<div>${article}</div>`,
+    };
+  } catch (e) {
+    console.log(e);
+    console.log(`Error crawling ${url}`);
 
-  await page.close();
-
-  return {
-    title,
-    data: `<div>${article}</div>`,
-  };
+    return {
+      title: `Chapter not found`,
+      data: `<div></div>`,
+    };
+  } finally {
+    await page.close();
+  }
 }
 
 async function batchCrawl({
@@ -67,7 +76,7 @@ async function batchCrawl({
 }
 
 async function vanCoThanDe() {
-  const totalChapters = 2;
+  const totalChapters = 10;
   const baseUrl = "https://metruyencv.com/truyen/van-co-than-de/chuong-";
 
   const data = await batchCrawl({ baseUrl, totalChapters });
@@ -85,4 +94,17 @@ async function taCoMotThanBiDongKy() {
   return data;
 }
 
-export { vanCoThanDe, taCoMotThanBiDongKy };
+async function quyBiChiChu() {
+  const totalChapters = 300;
+  const baseUrl = "https://metruyencv.com/truyen/quy-bi-chi-chu/chuong-";
+
+  const data = await batchCrawl({
+    baseUrl,
+    totalChapters,
+    step: 10,
+  });
+
+  return data;
+}
+
+export { vanCoThanDe, taCoMotThanBiDongKy, quyBiChiChu };
