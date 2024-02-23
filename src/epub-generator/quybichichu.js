@@ -8,8 +8,7 @@ async function generateEpub() {
       title: "Quỷ Bí Chi Chủ",
       author: "Ái Tiềm Thủy Đích Ô Tặc",
       publisher: "KOL",
-      cover:
-        "https://static.cdnno.com/poster/quy-bi-chi-chu/300.jpg?1585206121",
+      cover: "https://static.cdnno.com/poster/quy-bi-chi-chu/300.jpg",
       content: quyChiChiChuData,
     },
     "out/quy-bi-chi-chu.epub"
