@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "epub-gen": "^0.1.0",
-    "puppeteer": "^21.3.8"
+    "puppeteer": "^21.3.8",
+    "tesseract.js": "^5.0.4"
   }
 }

@@ -7,6 +7,7 @@ const newTab = () => {
 };
 
 const closeBrowser = () => {
+  console.log("Browser closed.");
   return browser.close();
 };
 
