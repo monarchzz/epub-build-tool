@@ -22,8 +22,14 @@ async function autoScroll(page) {
 }
 
 async function contentByUrl(url, { chapter, name }) {
-  const imagePath = `out/images/${name + "-" + chapter}.png`;
-  let timeout = 60 * 1000;
+  const basePath = `out/${name}`;
+
+  if (!fs.existsSync(basePath)) {
+    fs.mkdirSync(basePath, { recursive: true });
+  }
+
+  const imagePath = `${basePath}/${chapter}.png`;
+  let timeout = 1 * 1000;
   const isImageExist = fs.existsSync(imagePath);
 
   if (isImageExist) {
@@ -36,68 +42,7 @@ async function contentByUrl(url, { chapter, name }) {
 
   const page = await newTab();
 
-  await page.setCookie(
-    {
-      domain: ".metruyencv.com",
-      expirationDate: 1740319981.582806,
-      hostOnly: false,
-      httpOnly: true,
-      name: "cf_clearance",
-      path: "/",
-      sameSite: "None",
-      secure: true,
-      session: false,
-      storeId: "0",
-      value:
-        "0eg74LEgwMrAC99.NRefc7emF_NKCCnds9q_lBkYHPs-1708783981-1.0-AZn8QUwcMJ5AQ9z9q0buRPDu02gt2M3iNqyWEVO58NtirrijVzv6zI17y+/jlfd/kK7/5EJbHjERPJTGZu9+SAs=",
-      id: 1,
-    },
-    {
-      domain: "metruyencv.com",
-      expirationDate: 1709993761,
-      hostOnly: true,
-      httpOnly: false,
-      name: "l_token",
-      path: "/",
-      sameSite: "Strict",
-      secure: false,
-      session: false,
-      storeId: "0",
-      value:
-        "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJodHRwOlwvXC9hcGkudHJ1eWVuLm9ubFwvdjJcL2F1dGhcL2xvZ2luIiwiaWF0IjoxNzA4Nzg0MTYxLCJleHAiOjE3MDkyMTYxNjEsIm5iZiI6MTcwODc4NDE2MSwianRpIjoiZTBTMUJTcTkyS3BtdlVUZSIsInN1YiI6MTQ1NzQ3NCwicHJ2IjoiMjNiZDVjODk0OWY2MDBhZGIzOWU3MDFjNDAwODcyZGI3YTU5NzZmNyJ9.OogyXI1OV1VsSH0y1a7YfzDeBZV4S3Yb7V2iWb8iRow",
-      id: 2,
-    },
-    {
-      domain: "metruyencv.com",
-      expirationDate: 1743344162.845236,
-      hostOnly: true,
-      httpOnly: true,
-      name: "metruyenchucom_session",
-      path: "/",
-      sameSite: "Lax",
-      secure: true,
-      session: false,
-      storeId: "0",
-      value:
-        "eyJpdiI6Ik1TTFwvMkhEUjlvVGdMOWxpXC9cL1F1ZUE9PSIsInZhbHVlIjoidzQzUWdJRGVGMWhBMUNQK2tPNGFVeVg0Y3A5c3lQME5wbU92M2JOWmxRczFFcE9RV0krRFVTU1ZNakdyXC9TYVoiLCJtYWMiOiI0ZjViYWI5YjE4MzJjOGJiODkyNzMzMzU1NTAxMWU0YTdkZDIxOTAxNTE2ZDJiNTVjMzY3OTE3NDAzMDljZjhlIn0%3D",
-      id: 3,
-    },
-    {
-      domain: "metruyencv.com",
-      expirationDate: 1709993761,
-      hostOnly: true,
-      httpOnly: false,
-      name: "r_token",
-      path: "/",
-      sameSite: "Strict",
-      secure: false,
-      session: false,
-      storeId: "0",
-      value:
-        "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJodHRwOlwvXC9hcGkudHJ1eWVuLm9ubFwvdjJcL2F1dGhcL2xvZ2luIiwiaWF0IjoxNzA4Nzg0MTYxLCJleHAiOjE3MDkyMTYxNjEsIm5iZiI6MTcwODc4NDE2MSwianRpIjoiZTBTMUJTcTkyS3BtdlVUZSIsInN1YiI6MTQ1NzQ3NCwicHJ2IjoiMjNiZDVjODk0OWY2MDBhZGIzOWU3MDFjNDAwODcyZGI3YTU5NzZmNyJ9.OogyXI1OV1VsSH0y1a7YfzDeBZV4S3Yb7V2iWb8iRow",
-      id: 4,
-    }
-  );
+  // await page.setCookie();
 
   await page.setViewport({
     width: 1200,
@@ -111,13 +56,13 @@ async function contentByUrl(url, { chapter, name }) {
   return await new Promise((resolve) => {
     setTimeout(async () => {
       try {
-        await autoScroll(page);
+        // await autoScroll(page);
 
         const title = await page.$eval(".nh-read__title", (element) => {
           return element.textContent;
         });
 
-        // with tessaract
+        // screenshot
         if (!isImageExist) {
           const element = await page.$("#article");
 
@@ -126,28 +71,29 @@ async function contentByUrl(url, { chapter, name }) {
           });
         }
         // with tessaract
-        // const data = await imageToHtml(imagePath);
-        const data = "";
+        // const content = await imageToHtml(imagePath);
 
         // without tessaract
-        // const article = await page.$eval("#article", (element) => {
-        //   element.querySelectorAll("div").forEach((div) => div.remove());
+        const article = await page.$eval("#article", (element) => {
+          element.querySelectorAll("div").forEach((div) => div.remove());
 
-        //   return element.innerHTML;
-        // });
-        // const data = `<div>${article}</div>`;
+          return element.innerHTML;
+        });
+        const content = `<div>${article}</div>`;
 
         resolve({
+          id: chapter,
           title,
-          data,
+          content,
         });
       } catch (e) {
         console.log(e);
         console.log(`Error crawling ${url}`);
 
         resolve({
+          id: chapter,
           title: `Chapter not found`,
-          data: `<div></div>`,
+          content: `<div></div>`,
         });
       } finally {
         await page.close();
@@ -168,11 +114,11 @@ async function tessaractWithImages(name, chapter, index) {
 
   console.log(`Tessaract with images: ${imagePath} - ${title} - ${index}`);
 
-  const data = await imageToHtml(imagePath);
+  const content = await imageToHtml(imagePath);
 
   return {
     title,
-    data,
+    content,
   };
 }
 
@@ -198,31 +144,25 @@ async function batchCrawl({
 
         console.log(`Crawling chapter ${chapter}...`);
 
-        // return contentByUrl(`${baseUrl}${chapter}`, {
-        //   chapter,
-        //   name: "quy-bi-chi-chu",
-        // });
+        return contentByUrl(`${baseUrl}${chapter}`, {
+          chapter,
+          name: "tuc-menh-chi-hoan",
+        });
 
-        return tessaractWithImages("quy-bi-chi-chu", chapter, jsonIndex);
+        // return tessaractWithImages("quy-bi-chi-chu", chapter, jsonIndex);
       })
     );
 
     // push each chapter to data
     contents.forEach((content, index) => {
-      data.push({
-        id: i + index,
-        ...content,
-      });
+      data.push(content);
     });
   }
 
   // sort data by id
   data.sort((a, b) => a.id - b.id);
 
-  return data.map((item) => ({
-    title: item.title,
-    data: item.data,
-  }));
+  return data;
 }
 
 async function vanCoThanDe() {
@@ -257,4 +197,17 @@ async function quyBiChiChu({ startChapter, totalChapters, step = 10 }) {
   return data;
 }
 
-export { vanCoThanDe, taCoMotThanBiDongKy, quyBiChiChu };
+async function tucMenhChiHoan({ startChapter, totalChapters, step = 10 }) {
+  const baseUrl = "https://metruyencv.com/truyen/tuc-menh-chi-hoan/chuong-";
+
+  const data = await batchCrawl({
+    baseUrl,
+    totalChapters,
+    step,
+    startChapter,
+  });
+
+  return data;
+}
+
+export { vanCoThanDe, taCoMotThanBiDongKy, quyBiChiChu, tucMenhChiHoan };
