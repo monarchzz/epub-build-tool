@@ -21,7 +21,72 @@ async function autoScroll(page) {
   });
 }
 
-async function contentByUrl(url, { chapter, name }) {
+const setCookie = async (page) => {
+  await page.setCookie(
+    {
+      domain: ".metruyencv.com",
+      expirationDate: 1745165106.361595,
+      hostOnly: false,
+      httpOnly: true,
+      name: "cf_clearance",
+      path: "/",
+      sameSite: "None",
+      secure: true,
+      session: false,
+      storeId: "0",
+      value:
+        "Jmfl8ZzKNWTEL07T7VyQFnkpWcPkTCLhXQfgnT9.AyI-1713629106-1.0.1.1-sWJctIky4tCzCOZgC1irYMYx0eTI2h1QHaPZZWFs_8rgOw2xyLKSkiGYSP7jyC27RmjqnTeLNb7kvCoOoo56TQ",
+      id: 1,
+    },
+    {
+      domain: "metruyencv.com",
+      expirationDate: 1714838795,
+      hostOnly: true,
+      httpOnly: false,
+      name: "l_token",
+      path: "/",
+      sameSite: "Strict",
+      secure: false,
+      session: false,
+      storeId: "0",
+      value:
+        "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJodHRwczpcL1wvYXBpLnRydXllbi5vbmxcL3YyXC9hdXRoXC9sb2dpbiIsImlhdCI6MTcxMzYyOTE5NSwiZXhwIjoxNzE0MDYxMTk1LCJuYmYiOjE3MTM2MjkxOTUsImp0aSI6ImN6eFNzYTRtY0dJSVMxRXEiLCJzdWIiOjE0NTc0NzQsInBydiI6IjIzYmQ1Yzg5NDlmNjAwYWRiMzllNzAxYzQwMDg3MmRiN2E1OTc2ZjcifQ.fECDPULaidL7r-boQ1fO_U_ua1otYiTDVmujNEXndzQ",
+      id: 2,
+    },
+    {
+      domain: "metruyencv.com",
+      expirationDate: 1748189201.453259,
+      hostOnly: true,
+      httpOnly: true,
+      name: "metruyenchucom_session",
+      path: "/",
+      sameSite: "Lax",
+      secure: true,
+      session: false,
+      storeId: "0",
+      value:
+        "eyJpdiI6Ik1OdmRXdHhlc3BIWVJhQTlBUDF3NFE9PSIsInZhbHVlIjoiZktcL0txYmVJZDRMcStZZjBEVHBcL3RuU20rOWEyRTQzN2F0R3hqUHh4bTMrUXVxdHJicTBmMjhtZHNrS0FZbU5rIiwibWFjIjoiZjM2NDYxOTUwMGM3NWVmZDlkODNmY2VjMGZkNDg0NDA3NDI5ZDU0YjMzYjUzNDJmMGUwNjE1OWZhNjkzNmZiNSJ9",
+      id: 3,
+    },
+    {
+      domain: "metruyencv.com",
+      expirationDate: 1714838795,
+      hostOnly: true,
+      httpOnly: false,
+      name: "r_token",
+      path: "/",
+      sameSite: "Strict",
+      secure: false,
+      session: false,
+      storeId: "0",
+      value:
+        "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJodHRwczpcL1wvYXBpLnRydXllbi5vbmxcL3YyXC9hdXRoXC9sb2dpbiIsImlhdCI6MTcxMzYyOTE5NSwiZXhwIjoxNzE0MDYxMTk1LCJuYmYiOjE3MTM2MjkxOTUsImp0aSI6ImN6eFNzYTRtY0dJSVMxRXEiLCJzdWIiOjE0NTc0NzQsInBydiI6IjIzYmQ1Yzg5NDlmNjAwYWRiMzllNzAxYzQwMDg3MmRiN2E1OTc2ZjcifQ.fECDPULaidL7r-boQ1fO_U_ua1otYiTDVmujNEXndzQ",
+      id: 4,
+    }
+  );
+};
+
+async function contentByUrl(url, { chapter, name, withTessaract }) {
   const basePath = `out/${name}`;
 
   if (!fs.existsSync(basePath)) {
@@ -30,6 +95,11 @@ async function contentByUrl(url, { chapter, name }) {
 
   const imagePath = `${basePath}/${chapter}.png`;
   let timeout = 1 * 1000;
+
+  if (withTessaract) {
+    timeout = 60 * 1000;
+  }
+
   const isImageExist = fs.existsSync(imagePath);
 
   if (isImageExist) {
@@ -42,7 +112,7 @@ async function contentByUrl(url, { chapter, name }) {
 
   const page = await newTab();
 
-  // await page.setCookie();
+  // await setCookie(page);
 
   await page.setViewport({
     width: 1200,
@@ -70,16 +140,21 @@ async function contentByUrl(url, { chapter, name }) {
             path: imagePath,
           });
         }
-        // with tessaract
-        // const content = await imageToHtml(imagePath);
 
-        // without tessaract
-        const article = await page.$eval("#article", (element) => {
-          element.querySelectorAll("div").forEach((div) => div.remove());
+        let content = "";
 
-          return element.innerHTML;
-        });
-        const content = `<div>${article}</div>`;
+        if (withTessaract) {
+          // with tessaract
+          content = await imageToHtml(imagePath);
+        } else {
+          // without tessaract
+          const article = await page.$eval("#article", (element) => {
+            element.querySelectorAll("div").forEach((div) => div.remove());
+
+            return element.innerHTML;
+          });
+          content = `<div>${article}</div>`;
+        }
 
         resolve({
           id: chapter,
@@ -146,7 +221,8 @@ async function batchCrawl({
 
         return contentByUrl(`${baseUrl}${chapter}`, {
           chapter,
-          name: "tuc-menh-chi-hoan",
+          name: "ta-that-khong-muon-trong-sinh-a",
+          withTessaract: chapter > 1030,
         });
 
         // return tessaractWithImages("quy-bi-chi-chu", chapter, jsonIndex);
@@ -210,4 +286,27 @@ async function tucMenhChiHoan({ startChapter, totalChapters, step = 10 }) {
   return data;
 }
 
-export { vanCoThanDe, taCoMotThanBiDongKy, quyBiChiChu, tucMenhChiHoan };
+async function tathatkhongmuontrongsinha({
+  startChapter,
+  totalChapters,
+  step = 10,
+}) {
+  const baseUrl =
+    "https://metruyencv.com/truyen/ta-that-khong-muon-trong-sinh-a/chuong-";
+
+  const data = await batchCrawl({
+    baseUrl,
+    totalChapters,
+    step,
+    startChapter,
+  });
+
+  return data;
+}
+export {
+  vanCoThanDe,
+  taCoMotThanBiDongKy,
+  quyBiChiChu,
+  tucMenhChiHoan,
+  tathatkhongmuontrongsinha,
+};

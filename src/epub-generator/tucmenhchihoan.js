@@ -17,7 +17,7 @@ async function generateEpub() {
   const content = await tucMenhChiHoan({
     startChapter,
     totalChapters,
-    step: 10,
+    step: 50,
   });
 
   const json = JSON.stringify(content, null, 2);
