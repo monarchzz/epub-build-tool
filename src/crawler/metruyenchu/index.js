@@ -86,14 +86,17 @@ const setCookie = async (page) => {
   );
 };
 
-async function contentByUrl(url, { chapter, name, withTessaract }) {
-  const basePath = `out/${name}`;
-
+async function contentByUrl(url, { chapter, basePath, withTessaract }) {
   if (!fs.existsSync(basePath)) {
     fs.mkdirSync(basePath, { recursive: true });
   }
 
-  const imagePath = `${basePath}/${chapter}.png`;
+  const imagesPath = `${basePath}/images`;
+  if (!fs.existsSync(imagesPath)) {
+    fs.mkdirSync(imagesPath, { recursive: true });
+  }
+
+  const imagePath = `${imagesPath}/${chapter}.png`;
   let timeout = 1 * 1000;
 
   if (withTessaract) {
@@ -128,13 +131,18 @@ async function contentByUrl(url, { chapter, name, withTessaract }) {
       try {
         // await autoScroll(page);
 
-        const title = await page.$eval(".nh-read__title", (element) => {
-          return element.textContent;
-        });
+        const chapterElement = await page.$(`[data-x-data="chapter"]`);
+
+        const title = await chapterElement.$eval(
+          `.flex.justify-center.space-x-2.items-center.px-2`,
+          (element) => {
+            return element.textContent.trim();
+          }
+        );
 
         // screenshot
         if (!isImageExist) {
-          const element = await page.$("#article");
+          const element = await page.$(`[data-x-bind="ChapterContent"]`);
 
           await element.screenshot({
             path: imagePath,
@@ -145,14 +153,17 @@ async function contentByUrl(url, { chapter, name, withTessaract }) {
 
         if (withTessaract) {
           // with tessaract
-          content = await imageToHtml(imagePath);
+          // content = await imageToHtml(imagePath);
         } else {
           // without tessaract
-          const article = await page.$eval("#article", (element) => {
-            element.querySelectorAll("div").forEach((div) => div.remove());
+          const article = await page.$eval(
+            `[data-x-bind="ChapterContent"]`,
+            (element) => {
+              element.querySelectorAll("div").forEach((div) => div.remove());
 
-            return element.innerHTML;
-          });
+              return element.innerHTML.trim();
+            }
+          );
           content = `<div>${article}</div>`;
         }
 
@@ -202,6 +213,7 @@ async function batchCrawl({
   totalChapters,
   startChapter = 1,
   step = 10,
+  basePath,
 }) {
   const data = [];
 
@@ -221,7 +233,7 @@ async function batchCrawl({
 
         return contentByUrl(`${baseUrl}${chapter}`, {
           chapter,
-          name: "ta-that-khong-muon-trong-sinh-a",
+          basePath,
           withTessaract: chapter > 1030,
         });
 
@@ -303,10 +315,32 @@ async function tathatkhongmuontrongsinha({
 
   return data;
 }
+
+async function tientuxinnghetagiaithich({
+  startChapter,
+  totalChapters,
+  step = 10,
+  basePath,
+}) {
+  const baseUrl =
+    "https://metruyencv.com/truyen/tien-tu-xin-nghe-ta-giai-thich/chuong-";
+
+  const data = await batchCrawl({
+    baseUrl,
+    totalChapters,
+    step,
+    startChapter,
+    basePath,
+  });
+
+  return data;
+}
+
 export {
   vanCoThanDe,
   taCoMotThanBiDongKy,
   quyBiChiChu,
   tucMenhChiHoan,
   tathatkhongmuontrongsinha,
+  tientuxinnghetagiaithich,
 };
